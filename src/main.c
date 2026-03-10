@@ -1,16 +1,25 @@
 #include <stdio.h> 
 #include <string.h>
+#include <time.h> // nanosleep()
 
 #define ROWS    11 // Grid ROWS length
 #define COLS    19 // Grid COLSumn length
 
-void render(const int grid[ROWS][COLS]);
+
 void init_grid(int grid[ROWS][COLS]);
+void clear_screen(void); 
+void render(const int grid[ROWS][COLS]);
 
 int main() {
     int grid[ROWS][COLS];
-    init_grid(grid);
-    render(grid);
+    struct timespec* time = {0, 500000000};
+    struct timespec* rem;
+    while (1) {
+        init_grid(grid);
+        clear_screen();
+        render(grid);
+        nanosleep(time, rem); 
+    }
 }
 
 void init_grid(int grid[ROWS][COLS]) {
@@ -25,6 +34,10 @@ void init_grid(int grid[ROWS][COLS]) {
 
     /* Set the center cursor */
     grid[(ROWS)/2][(COLS)/2] = '+';
+}
+
+void clear_screen(void) {
+    printf("\x1B[2J");
 }
 
 void render(const int grid[ROWS][COLS]) {
