@@ -1,5 +1,8 @@
 #include <stdio.h> 
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <termios.h>
 #include <time.h> // nanosleep()
 
 #define ROWS    11 // Grid ROWS length
@@ -7,6 +10,8 @@
 
 
 void init_grid(int grid[ROWS][COLS]);
+struct termios* set_terminal_settings(void);
+void user_input(void);
 void clear_screen(void); 
 void render(const int grid[ROWS][COLS]);
 
@@ -14,12 +19,19 @@ int main() {
     int grid[ROWS][COLS];
     struct timespec* time = {0, 500000000};
     struct timespec* rem;
+    
+    init_grid(grid);
+    struct termios* original_settings = set_terminal_settings();    
+
     while (1) {
-        init_grid(grid);
+        user_input();
         clear_screen();
         render(grid);
         nanosleep(time, rem); 
     }
+    
+    tcsetattr(STDOUT_FILENO, TCSANOW, original_settings);
+    return 0;
 }
 
 void init_grid(int grid[ROWS][COLS]) {
@@ -34,6 +46,27 @@ void init_grid(int grid[ROWS][COLS]) {
 
     /* Set the center cursor */
     grid[(ROWS)/2][(COLS)/2] = '+';
+}
+
+struct termios* set_terminal_settings() {
+    struct termios* original_settings = (struct termios*)malloc(sizeof(struct termios));  
+
+    /* Save previous settings */
+    tcgetattr(STDOUT_FILENO, original_settings);
+
+    struct termios new_settings = *original_settings; 
+    new_settings.c_lflag &= ~ECHO; 
+
+    /* Set new settings */ 
+    tcsetattr(STDOUT_FILENO, TCSANOW, &new_settings);
+
+    return original_settings;
+}
+
+void user_input() {
+    /* Read a character */
+
+    /* Do some action based on the character: WASD, c, q */
 }
 
 void clear_screen(void) {
